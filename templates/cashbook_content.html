@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cashbook App</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script>
+  function focusKategoriBaru() {
+    document.getElementById('kategori_baru').focus();
+  }
+  function setDeleteKategoriValue(val) {
+    document.getElementById('delete_kategori_select').value = val;
+  }
+  </script>
+</head>
+<body class="bg-light">
+<div class="container py-4">
+    <h2 class="mb-4">Cashbook App</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">Tambah Transaksi</div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-2">
+                            <label class="form-label">Tarikh</label>
+                            <input type="date" name="tarikh" class="form-control" required value="{{request.form.tarikh or current_date}}">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Jenis</label>
+                            <select name="jenis" class="form-select" required>
+                                <option value="masuk">Masuk</option>
+                                <option value="keluar">Keluar</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Amaun (RM)</label>
+                            <input type="number" name="amaun" step="0.01" class="form-control" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Kategori</label>
+                            <div class="input-group mb-2">
+                                <select name="kategori" class="form-select" required>
+                                    {% for cat in categories %}
+                                    <option value="{{cat}}">{{cat}}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" title="Tambah kategori baru" data-bs-toggle="modal" data-bs-target="#addKategoriModal">+</button>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-danger flex-fill" data-bs-toggle="modal" data-bs-target="#deleteKategoriModal">Padam Kategori</button>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Nota</label>
+                            <input type="text" name="nota" class="form-control" placeholder="Contoh: Bayar makan tengahari, topup, dsb.">
+                        </div>
+                        <button type="submit" class="btn btn-success">Tambah</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-center">
+                <div class="card-header bg-info text-white">Ringkasan</div>
+                <div class="card-body">
+                    <h5>Jumlah Masuk: <span class="text-success">RM {{ '%.2f' % total_masuk }}</span></h5>
+                    <h5>Jumlah Keluar: <span class="text-danger">RM {{ '%.2f' % total_keluar }}</span></h5>
+                    <h4 class="mt-3">Baki: <span class="fw-bold">RM {{ '%.2f' % baki }}</span></h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header bg-secondary text-white">Senarai Transaksi</div>
+        <div class="card-body p-0">
+            <form class="p-3" method="get">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label mb-0">Tarikh</label>
+                        <input type="date" name="filter_tarikh" class="form-control" value="{{ filter_tarikh }}">
+                    </div>
+                    <div class="col-md-3">
+            <label class="form-label mb-0">Kategori</label>
+            <select name="filter_kategori" class="form-select" multiple>
+              {% for cat in categories %}
+              <option value="{{cat}}" {% if cat in filter_kategori %}selected{% endif %}>{{cat}}</option>
+              {% endfor %}
+            </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label mb-0">Jenis</label>
+                        <select name="filter_jenis" class="form-select">
+                            <option value="">Semua</option>
+                            <option value="masuk" {% if filter_jenis=='masuk' %}selected{% endif %}>Masuk</option>
+                            <option value="keluar" {% if filter_jenis=='keluar' %}selected{% endif %}>Keluar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </div>
+            </form>
+            <table class="table table-striped table-bordered mb-0">
+                <thead class="table-light">
+    <tr>
+        <th>Tarikh</th>
+        <th>Jenis</th>
+        <th>Amaun (RM)</th>
+        <th>Kategori</th>
+        <th>Nota</th>
+        <th>Edit</th>
+        <th>Padam</th>
+    </tr>
+</thead>
+                <tbody>
+                {% for t in transactions %}
+                    <tr>
+                        <td>{{ t.tarikh }}</td>
+                        <td>{{ t.jenis|capitalize }}</td>
+                        <td class="text-end">{{ '%.2f' % (t.amaun|float) }}</td>
+                        <td>{{ t.kategori }}</td>
+                        <td>{{ t.nota }}</td>
+            <td>
+              <a href="{{ url_for('edit_transaction', idx=loop.index0, buku_akaun=buku_akaun) }}" class="btn btn-sm btn-warning">Edit</a>
+            </td>
+            <td>
+              <a href="{{ url_for('delete_transaction_route', idx=loop.index0, buku_akaun=buku_akaun) }}" class="btn btn-sm btn-danger" onclick="return confirm('Padam transaksi ini?')">Padam</a>
+            </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7" class="text-center">Tiada transaksi direkodkan.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- Modal Padam Kategori -->
+<div class="modal fade" id="deleteKategoriModal" tabindex="-1" aria-labelledby="deleteKategoriModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="get" action="" onsubmit="if(document.getElementById('delete_kategori_select').value==''){return false;}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteKategoriModalLabel">Padam Kategori</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="delete_kategori_select" class="form-label">Pilih kategori untuk dipadam:</label>
+          <select id="delete_kategori_select" name="delete_kategori" class="form-select" required>
+            <option value="">-- Pilih Kategori --</option>
+            {% for cat in categories %}
+            <option value="{{cat}}">{{cat}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-danger">Padam</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Tambah Kategori -->
+<div class="modal fade" id="addKategoriModal" tabindex="-1" aria-labelledby="addKategoriModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+  <form method="post" action="{{ url_for('add_kategori', buku_akaun=buku_akaun) }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addKategoriModalLabel">Tambah Kategori Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="add_kategori_input" class="form-label">Nama kategori baru:</label>
+          <input type="text" id="add_kategori_input" name="kategori_baru" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success">Tambah</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function() {
+    var kategoriSelect = $('select[name="filter_kategori"]');
+    if (kategoriSelect.length) {
+      kategoriSelect.select2({
+        placeholder: 'Pilih kategori',
+        allowClear: true,
+        width: '100%',
+        closeOnSelect: false
+      });
+    }
+  });
+</script>
+<script>
+// Bila submit form modal, redirect ke /delete_kategori/<kategori>/<buku_akaun>
+document.querySelectorAll('#deleteKategoriModal form').forEach(function(form){
+  form.addEventListener('submit', function(e){
+    var val = document.getElementById('delete_kategori_select').value;
+    var buku = "{{ buku_akaun }}";
+    if(val && buku){
+      e.preventDefault();
+      window.location.href = '/delete_kategori/' + encodeURIComponent(val) + '/' + encodeURIComponent(buku);
+    }
+  });
+});
+</script>
+</body>
+</html>
+{# Semua kod cashbook dari index.html (borang tambah, filter, senarai transaksi, dsb.) boleh dipindahkan ke sini untuk digunakan semula dalam buku_akaun.html #}
+{# Anda boleh copy-paste bahagian utama dari index.html ke sini, tanpa tag <html>, <head>, <body> #}

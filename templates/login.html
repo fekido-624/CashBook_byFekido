@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login Cashbook</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white text-center">Login Cashbook</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#daftarModal">Daftar Pengguna Baru</button>
+                    </div>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+                                        <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+    <div class="text-center mt-2">
+        <a href="{{ url_for('lupa_password') }}" class="btn btn-link">Lupa Password?</a>
+    </div>
+                                        <!-- Modal Daftar Pengguna Baru -->
+                                        <div class="modal fade" id="daftarModal" tabindex="-1" aria-labelledby="daftarModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form method="post" action="{{ url_for('daftar_pengguna') }}">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="daftarModalLabel">Daftar Pengguna Baru</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="daftar_username" class="form-label">Username</label>
+                                                                <input type="text" class="form-control" id="daftar_username" name="username" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="daftar_email" class="form-label">Email</label>
+                                                                <input type="email" class="form-control" id="daftar_email" name="email" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="daftar_password" class="form-label">Password</label>
+                                                                <input type="password" class="form-control" id="daftar_password" name="password" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="daftar_phone" class="form-label">No. Telefon</label>
+                                                                <input type="text" class="form-control" id="daftar_phone" name="phone" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                            <button type="submit" class="btn btn-primary">Daftar</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
