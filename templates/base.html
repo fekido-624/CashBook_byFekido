@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Cashbook{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    {% block content %}{% endblock %}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Session timeout: 2 min (120000 ms), show warning at 1m45s (105000 ms)
+let warningTimeout = setTimeout(showSessionWarning, 105000);
+let logoutTimeout = setTimeout(autoLogout, 120000);
+
+function resetSessionTimers() {
+    clearTimeout(warningTimeout);
+    clearTimeout(logoutTimeout);
+    warningTimeout = setTimeout(showSessionWarning, 105000);
+    logoutTimeout = setTimeout(autoLogout, 120000);
+}
+
+function showSessionWarning() {
+    let modal = document.getElementById('sessionWarningModal');
+    if (modal) {
+        let bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+}
+
+function continueSession() {
+    fetch(window.location.pathname, {method: 'GET', cache: 'no-store'}).then(()=>{
+        resetSessionTimers();
+        let modal = bootstrap.Modal.getInstance(document.getElementById('sessionWarningModal'));
+        if(modal) modal.hide();
+    });
+}
+
+function autoLogout() {
+    window.location.href = '/logout';
+}
+
+// Reset timer on user activity
+['click','keydown','mousemove','scroll'].forEach(evt => {
+    document.addEventListener(evt, resetSessionTimers, true);
+});
+</script>
+<!-- Session Timeout Modal -->
+<div class="modal fade" id="sessionWarningModal" tabindex="-1" aria-labelledby="sessionWarningLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sessionWarningLabel">Sesi Hampir Tamat</h5>
+            </div>
+            <div class="modal-body">
+                Anda tidak aktif selama 2 minit. Sesi akan tamat sebentar lagi.<br>
+                Teruskan sesi atau logout?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="continueSession()">Teruskan Sesi</button>
+                <a href="/logout" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3">
+    <a href="{{ url_for('admin_export_all') }}" class="btn btn-success">Download Semua Data (ZIP)</a>
+    <a href="{{ url_for('admin_import_all') }}" class="btn btn-warning">Import Semua Data (ZIP)</a>
+  </div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Senarai Pengguna</h2>
+    <a href="{{ url_for('senarai_buku') }}" class="btn btn-secondary">&larr; Kembali</a>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Phone</th>
+  <th>Kemaskini</th>
+  <th>Padam</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phone }}</td>
+        <td>
+          <a href="{{ url_for('admin_edit_user', username=user.username) }}" class="btn btn-sm btn-primary">Edit</a>
+        </td>
+        <td>
+          {% if user.username == 'fekido' %}
+            <button class="btn btn-danger btn-sm" disabled>Padam</button>
+          {% else %}
+          <form method="post" action="{{ url_for('admin_delete_user', username=user.username) }}" onsubmit="return confirm('Padam user {{ user.username }}?')">
+            <button type="submit" class="btn btn-danger btn-sm">Padam</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

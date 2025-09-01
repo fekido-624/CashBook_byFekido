@@ -83,7 +83,21 @@
                 </div>
             </div>
         </div>
-    </div>
+        {% if total_pages > 1 %}
+        <nav aria-label="Transaksi pagination" class="my-3">
+          <ul class="pagination justify-content-center">
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('buku_akaun', buku_akaun=buku_akaun, page=page-1, filter_tarikh=filter_tarikh, filter_jenis=filter_jenis, filter_kategori=filter_kategori) }}">Sebelum</a>
+            </li>
+            {% for p in range(1, total_pages+1) %}
+              <li class="page-item {% if p == page %}active{% endif %}"><a class="page-link" href="{{ url_for('buku_akaun', buku_akaun=buku_akaun, page=p, filter_tarikh=filter_tarikh, filter_jenis=filter_jenis, filter_kategori=filter_kategori) }}">{{ p }}</a></li>
+            {% endfor %}
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+              <a class="page-link" href="{{ url_for('buku_akaun', buku_akaun=buku_akaun, page=page+1, filter_tarikh=filter_tarikh, filter_jenis=filter_jenis, filter_kategori=filter_kategori) }}">Seterusnya</a>
+            </li>
+          </ul>
+        </nav>
+        {% endif %}
     <div class="card">
         <div class="card-header bg-secondary text-white">Senarai Transaksi</div>
         <div class="card-body p-0">
