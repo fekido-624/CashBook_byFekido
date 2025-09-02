@@ -17,7 +17,12 @@
     </div>
     <div class="mb-3">
       <label class="form-label">Password (biar kosong jika tak tukar)</label>
-      <input type="password" name="password" class="form-control" placeholder="Tukar password">
+      <div class="input-group">
+        <input type="password" name="password" id="edit_user_password" class="form-control" placeholder="Tukar password">
+        <span class="input-group-text">
+          <input type="checkbox" id="show_edit_user_password" onclick="togglePassword('edit_user_password', this)"> Show
+        </span>
+      </div>
     </div>
     <div class="d-flex gap-2">
       <a href="{{ url_for('admin_view_users') }}" class="btn btn-secondary">Batal</a>
@@ -25,4 +30,14 @@
     </div>
   </form>
 </div>
+<script>
+function togglePassword(inputId, cb) {
+  var input = document.getElementById(inputId);
+  if (cb.checked) {
+    input.type = 'text';
+  } else {
+    input.type = 'password';
+  }
+}
+</script>
 {% endblock %}
